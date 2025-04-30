@@ -1,0 +1,240 @@
+sources:
+  # Core AI/ML Research & Development
+  - https://en.wikipedia.org/wiki/Artificial_intelligence
+  - https://blog.openai.com/
+  - https://deepmind.com/blog
+  - https://ai.googleblog.com/
+  - https://www.microsoft.com/en-us/research/group/artificial-intelligence/
+  - https://arxiv.org/list/cs.AI/recent
+  - https://paperswithcode.com/
+  - https://neurips.cc/
+  - https://icml.cc/
+  - https://aaai.org/
+
+  # Technology News & Analysis
+  - https://news.ycombinator.com/
+  - https://techcrunch.com/
+  - https://theverge.com/
+  - https://wired.com/
+  - https://gizmodo.com/
+  - https://www.bbc.com/news/technology
+  - https://cnet.com/
+  - https://thenextweb.com/
+  - https://mashable.com/
+  - https://zdnet.com/
+
+  # AI Blogs & Industry Thought Leadership
+  - https://ai.facebook.com/blog/
+  - https://blogs.nvidia.com/ai/
+  - https://aws.amazon.com/blogs/machine-learning/
+  - https://cloud.google.com/blog/topics/ai-machine-learning
+  - https://www.ibm.com/blogs/research/ai/
+  - https://huggingface.co/blog
+  - https://medium.com/@OpenAI
+  - https://towardsdatascience.com/
+  - https://analyticsindiamag.com/
+  - https://emerj.com/
+
+  # Academic Journals & Conferences
+  - https://www.nature.com/natmachintell/
+  - https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=5126
+  - https://www.sciencedirect.com/journal/artificial-intelligence
+  - https://link.springer.com/journal/13
+  - https://www.aclweb.org/anthology/
+  - https://www.jmlr.org/
+  - https://dl.acm.org/journal/jair
+  - https://ijcai.org/
+  - https://www.coling2023.org/
+  - https://aclanthology.org/
+
+  # Government & Policy
+  - https://www.whitehouse.gov/ai/
+  - https://data.gov/
+  - https://www.europarl.europa.eu/artificial-intelligence-act/
+  - https://unitednations.ai/
+  - https://www.oecd.org/ai/
+  - https://www.gov.uk/get-information-about/
+  - https://www.cisa.gov/ai-cybersecurity
+  - https://www.ftc.gov/ai
+  - https://www.fda.gov/artificial-intelligence-machine-learning
+  - https://www.who.int/health-topics/artificial-intelligence
+
+  # Healthcare & Biotech
+  - https://www.healthit.gov/
+  - https://www.ncbi.nlm.nih.gov/pmc/
+  - https://www.nature.com/nbt/
+  - https://www.cell.com/cell-systems
+  - https://www.medicalxpress.com/
+  - https://www.genome.gov/
+  - https://www.biocompare.com/
+  - https://www.medscape.com/
+  - https://www.healio.com/
+  - https://www.statnews.com/
+
+  # Finance & Fintech
+  - https://www.bloomberg.com/finance
+  - https://www.finextra.com/
+  - https://coindesk.com/
+  - https://www.americanbanker.com/
+  - https://www.economist.com/finance-and-economics
+  - https://www.ft.com/fintech
+  - https://www.jpmorganchase.com/insights
+  - https://www.visa.com/blog/
+  - https://www.mastercard.com/insights
+  - https://www.paypal.com/us/webapps/mpp/blog
+
+  # Education & MOOC Platforms
+  - https://www.coursera.org/
+  - https://www.edx.org/
+  - https://www.khanacademy.org/
+  - https://www.udacity.com/
+  - https://www.udemy.com/
+  - https://www.pluralsight.com/
+  - https://www.futurelearn.com/
+  - https://www.classcentral.com/
+  - https://www.kaggle.com/learn
+  - https://www.learnopencv.com/
+
+  # IoT, Robotics, & Automation
+  - https://www.iotworldtoday.com/
+  - https://spectrum.ieee.org/robotics
+  - https://www.roboticsbusinessreview.com/
+  - https://www.autonomoustuff.com/
+  - https://www.engineering.com/
+  - https://www.designnews.com/
+  - https://www.gartner.com/en/emerging-insights/top-technology-trends
+  - https://www.forbes.com/autonomous-vehicles/
+  - https://www.weforum.org/agenda/tag/robotics/
+  - https://www.automation.com/
+
+  # Cybersecurity & Data Privacy
+  - https://krebsonsecurity.com/
+  - https://schneier.com/
+  - https://www.darkreading.com/
+  - https://www.cyberscoop.com/
+  - https://www.wired.com/category/security/
+  - https://www.helpnetsecurity.com/
+  - https://www.securityweek.com/
+  - https://www.privacyinternational.org/
+  - https://www.cryptool.org/en/
+  - https://www.openbugbounty.org/
+
+  # Environmental & Climate Tech
+  - https://www.climatechangenews.com/
+  - https://www.greenbiz.com/
+  - https://ensia.com/
+  - https://www.carbonbrief.org/
+  - https://www.climatecentral.org/
+  - https://www.nrdc.org/stories
+  - https://www.worldwildlife.org/
+  - https://www.unenvironment.org/
+  - https://www.solarpowerworldonline.com/
+  - https://www.windpower.org/
+
+  # Transportation & Autonomous Vehicles
+  - https://www.tesla.com/autopilot
+  - https://waymo.com/
+  - https://www.selfdrivingcars.com/
+  - https://www.transportation.gov/
+  - https://www.smartcitiesworld.net/
+  - https://www.mobilityoutlook.com/
+  - https://www.aviationtoday.com/
+  - https://www.maritime-executive.com/
+  - https://www.railway-technology.com/
+  - https://www.airbus.com/innovation.html
+
+  # Entertainment & Media
+  - https://variety.com/
+  - https://hollywoodreporter.com/
+  - https://deadline.com/
+  - https://www.hollywood.com/
+  - https://www.indiewire.com/
+  - https://www.gamesindustry.biz/
+  - https://www.polygon.com/
+  - https://www.musictech.com/
+  - https://www.animationmagazine.net/
+  - https://www.streamingmedia.com/
+
+  # Social Media & Collaboration Tools
+  - https://about.fb.com/
+  - https://blog.twitter.com/
+  - https://engineering.linkedin.com/
+  - https://slack.engineering/
+  - https://zoom.us/blog
+  - https://medium.com/@TwitterEng
+  - https://www.redditinc.com/
+  - https://www.quora.com/
+  - https://www.discord.com/
+  - https://www.tiktok.com/
+
+  # Retail & E-commerce
+  - https://www.amazon.science/
+  - https://www.ebayinc.com/
+  - https://www.shopify.com/blog
+  - https://www.targettechbytes.com/
+  - https://www.costco.com/
+  - https://www.walmart.com/
+  - https://www.bestbuy.com/
+  - https://www.aliexpress.com/
+  - https://www.zappos.com/
+  - https://www.wayfair.com/
+
+  # Energy & Sustainability
+  - https://www.energy.gov/
+  - https://www.iea.org/
+  - https://www.bp.com/
+  - https://www.shell.com/
+  - https://www.exxonmobil.com/
+  - https://www.siemens-energy.com/
+  - https://www.general-electric.com/
+  - https://www.vestas.com/
+  - https://www.orsted.com/
+  - https://www.enelgreenpower.com/
+
+  # Manufacturing & Industry 4.0
+  - https://www.industryweek.com/
+  - https://www.manufacturing.net/
+  - https://www.plantengineering.com/
+  - https://www.controleng.com/
+  - https://www.automationworld.com/
+  - https://www.mmsonline.com/
+  - https://www.formnext.com/
+  - https://www.hannovermesse.de/
+  - https://www.3dprintingindustry.com/
+  - https://www.materialise.com/
+
+  # Legal & Compliance
+  - https://www.law.com/
+  - https://www.lexology.com/
+  - https://www.jdsupra.com/
+  - https://www.abajournal.com/
+  - https://www.law360.com/
+  - https://www.complianceweek.com/
+  - https://www.ethisphere.com/
+  - https://www.transparency.org/
+  - https://www.opendefinition.org/
+  - https://www.righttoknow.org/
+
+  # Non-Profit & Open Source
+  - https://www.mozilla.org/ai/
+  - https://creativecommons.org/
+  - https://www.apache.org/
+  - https://www.gnu.org/
+  - https://www.python.org/
+  - https://www.tensorflow.org/
+  - https://pytorch.org/
+  - https://github.com/
+  - https://gitlab.com/
+  - https://sourceforge.net/
+
+  # Miscellaneous Niche Sources
+  - https://www.kaggle.com/
+  - https://www.hackster.io/
+  - https://www.instructables.com/
+  - https://www.arduino.cc/
+  - https://raspberrypi.org/
+  - https://www.sparkfun.com/
+  - https://www.hackerearth.com/
+  - https://www.codechef.com/
+  - https://leetcode.com/
+  - https://www.geeksforgeeks.org/

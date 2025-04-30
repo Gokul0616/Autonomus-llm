@@ -1,0 +1,17 @@
+# config.yaml
+
+# how often (in seconds) to fetch & retrain on new data
+fetch_interval: 3600
+
+# path to the sources YAML file
+sources_path: "sources.yaml"
+
+# training hyper-parameters
+block_size: 256
+batch_size: 32
+learning_rate: 1e-4
+grad_accum_steps: 4
+
+# where to read/write your model and vocab
+model_path: agent_model.pth
+vocab_path: tokenizer.json

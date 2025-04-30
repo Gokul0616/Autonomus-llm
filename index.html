@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatGPT-Style Chat UI</title>
+  <style>
+    :root {
+      --primary-color: #10a37f;
+      --bg-color: #343541;
+      --user-bg: #40414f;
+      --agent-bg: #444654;
+      --border-color: #565869;
+      --text-color: #ececf1;
+      --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family);
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      height: 100vh;
+      display: flex;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 260px;
+      background-color: #202123;
+      padding: 1rem;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .sidebar h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      padding-bottom: 160px;
+    }
+
+    .input-container {
+      position: fixed;
+      bottom: 0;
+      left: 260px;
+      right: 0;
+      padding: 1rem;
+      background: var(--bg-color);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .message {
+      max-width: 800px;
+      margin: 1rem auto;
+      padding: 1rem;
+      border-radius: 8px;
+      position: relative;
+      line-height: 1.5;
+    }
+
+    .user-message {
+      background-color: var(--user-bg);
+      margin-left: auto;
+      border: 1px solid var(--border-color);
+    }
+
+    .agent-message {
+      background-color: var(--agent-bg);
+      margin-right: auto;
+      border: 1px solid var(--border-color);
+      white-space: pre-wrap;
+    }
+
+    #prompt {
+      flex: 1;
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      resize: none;
+      font-size: 1rem;
+      min-height: 60px;
+      max-height: 200px;
+      background-color: var(--user-bg);
+      color: var(--text-color);
+    }
+
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    button:hover {
+      opacity: 0.8;
+    }
+
+    .typing-indicator {
+      display: flex;
+      padding: 1rem;
+      gap: 4px;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background-color: #10a37f;
+      border-radius: 50%;
+      animation: typing 1.4s infinite ease-in-out;
+    }
+
+    @keyframes typing {
+      0%, 40%, 100% { transform: translateY(0); }
+      20% { transform: translateY(-4px); }
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: #555;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background-color: #2f2f2f;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <div>
+        <h2>Autonomous Agent</h2>
+      </div>
+      <div>
+        <button onclick="newChat()" style="width: 100%;">+ New Chat</button>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="chat-box" id="chat-box">
+        <!-- Initial greeting -->
+        <div class="agent-message message">
+          Hello! I'm an autonomous AI agent. How can I help you today?
+        </div>
+      </div>
+
+      <div class="input-container">
+        <textarea id="prompt" rows="1" placeholder="Send a message..." 
+                  oninput="autoResize(this)" 
+                  onkeydown="handleKeyPress(event)"></textarea>
+        <button onclick="sendRequest()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function autoResize(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    function handleKeyPress(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendRequest();
+      }
+    }
+
+    function showTypingIndicator() {
+      const chatBox = document.getElementById('chat-box');
+      const typing = document.createElement('div');
+      typing.className = 'agent-message message';
+      typing.innerHTML = `
+        <div class="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot" style="animation-delay: 0.2s"></div>
+          <div class="typing-dot" style="animation-delay: 0.4s"></div>
+        </div>
+      `;
+      chatBox.appendChild(typing);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+      const chatBox = document.getElementById('chat-box');
+      const typing = chatBox.querySelector('.typing-indicator')?.parentElement;
+      if (typing) chatBox.removeChild(typing);
+    }
+
+    async function sendRequest() {
+      const prompt = document.getElementById('prompt').value.trim();
+      if (!prompt) return;
+
+      const chatBox = document.getElementById('chat-box');
+
+      // Add user message
+      const userDiv = document.createElement('div');
+      userDiv.className = 'user-message message';
+      userDiv.textContent = prompt;
+      chatBox.appendChild(userDiv);
+
+      // Clear input and show typing indicator
+      document.getElementById('prompt').value = '';
+      showTypingIndicator();
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const response = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: prompt })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch data from the server.');
+        }
+
+        const data = await response.json();
+
+        if (data && data.response) {
+          const agentDiv = document.createElement('div');
+          agentDiv.className = 'agent-message message';
+
+          try {
+            agentDiv.innerHTML = marked.parse(data.response); // Using marked.js for markdown
+          } catch (error) {
+            console.error("Error parsing markdown:", error);
+            agentDiv.innerHTML = data.response; // Fallback to raw text if markdown parsing fails
+          }
+
+          if (data.sources && data.sources.length > 0) {
+            agentDiv.innerHTML += `<div style="margin-top: 1rem; font-size: 0.8em; color: #ccc;">
+              Sources: ${data.sources.map(url => `<a href="${url}" target="_blank" style="color: #10a37f;">${new URL(url).hostname}</a>`).join(', ')}
+            </div>`;
+          }
+
+          chatBox.appendChild(agentDiv);
+        } else {
+          throw new Error("No 'response' field in response data.");
+        }
+
+      } catch (error) {
+        console.error('Error:', error);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'agent-message message';
+        errorDiv.textContent = 'Sorry, an error occurred. Please try again.';
+        chatBox.appendChild(errorDiv);
+      } finally {
+        removeTypingIndicator();
+      }
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function newChat() {
+      document.getElementById('chat-box').innerHTML = `
+        <div class="agent-message message">
+          Hello! I'm an autonomous AI agent. How can I help you today?
+        </div>
+      `;
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</body>
+</html>
