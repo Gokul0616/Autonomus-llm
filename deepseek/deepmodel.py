@@ -10,7 +10,7 @@ from torch.cuda.amp import autocast, GradScaler
 import torch.nn.functional as F  # Add this with other imports
 from datasets import load_dataset
 import itertools
-import BPETokenizer
+from BPETokenizer import CustomBPETokenizer
 from einops import rearrange
 from rotary_embedding_torch import RotaryEmbedding  
 from model_versioning import ModelVersioner
@@ -341,7 +341,7 @@ if __name__ == '__main__':
     logger.info(f"Streamed and combined {len(texts)} texts in {time.time()-start_time:.2f}s")    
 
     
-    tokenizer = BPETokenizer(vocab_size=10000)
+    tokenizer = CustomBPETokenizer(vocab_size=10000)
     tokenizer.build_vocab(texts)  
 
     

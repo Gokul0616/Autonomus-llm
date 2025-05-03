@@ -15,7 +15,8 @@ from autonomous.tools.software import ShellTool, DesktopAutomationTool, RestAPIT
 from autonomous.tools.hardware import LEDTool, ServoTool, SensorTool
 from self_improvement import CodeValidator  
 from reasoning import TreeOfThoughtReasoner
-import BPETokenizer
+from autonomous.self_model.self_model import SelfModel
+from BPETokenizer import CustomBPETokenizer 
 
 
 from autonomous.Memory.memory_store import GPTMemoryStore
@@ -72,37 +73,56 @@ def main_loop(use_improved=False):
 # Modify main_loop
 def autonomous_loop(use_improved=False):
     try:
-        agent = initialize_agent()
-        observer = ApplicationObserver()
-        executor = ActionExecutor()
-        safety = ConstitutionalAI()
-        approval = HumanApproval()
-        executor = SafeExecutor() 
-        
+        agent      = initialize_agent()
+        observer   = ApplicationObserver()
+        executor   = SafeExecutor()
+        safety     = ConstitutionalAI()
+        approval   = HumanApproval()
+        self_model = SelfModel()
+
         while True:
-            # Perception Phase
-            state = observer.capture_ui_state()
-            
-            # Reasoning Phase
+            # 1. Perceive
+            state = observer.capture_state()
+
+            # 2. Plan (include self_model.data in context)
             plan = agent.process_query(
                 "Analyze current state and suggest improvements",
-                context=state
+                context={**state, "self_model": self_model.data}
             )
-            
-            # Safety Check
-            if not safety.validate(plan):
-                raise SecurityError("Plan violates safety constraints")
-                
-            # Human Approval
-            if not approval.check(plan):
-                continue
-                
-            # Execution
-            executor.execute(plan)
-            
-            # Learning
-            improvement_engine = SelfImprovementEngine(agent.llm, CodeValidator())
-            improvement_engine.learn_from_experience(plan)
+
+            # 3. Pre‑execution Introspection
+            pre_reflection = agent.llm.generate(
+                f"Given my self‐model {self_model.data} and proposed plan {plan}, "
+                "what concerns or improvements do you see?"
+            )
+            # Optionally revise plan
+            plan = agent.process_query(
+                f"Revise the plan based on introspection: {pre_reflection}",
+                context={**state, "self_model": self_model.data}
+            )
+
+            # 4. Safety & Approval
+            if not safety.validate(plan): raise SecurityError("...")
+            if not approval.check(plan): continue
+
+            # 5. Execute
+            outcome = executor.execute(plan)
+
+            # 6. Post‑execution Introspection
+            post_reflection = agent.llm.generate(
+                f"Reflect on the outcome: {outcome}. What did I learn about my abilities?"
+            )
+            # Update self‑model
+            self_model.update(post_reflection)
+
+            # 7. (Optional) Narrative Generation every N steps
+            if len(self_model.data.get("reflections", [])) % 10 == 0:
+                narrative = agent.llm.generate(
+                    f"Summarize key lessons from my reflections: "
+                    f"{self_model.data['reflections'][-10:]}"
+                )
+                self_model.data.setdefault("narrative", []).append(narrative)
+                self_model.save()
             
     except Exception as e:
         print(f"Autonomous loop failed: {str(e)}")
@@ -115,7 +135,7 @@ if __name__ == "__main__":
 
     memory_store = GPTMemoryStore(
         model=GPTModel(),
-        tokenizer=BPETokenizer()
+        tokenizer=CustomBPETokenizer()
     )
 
 
