@@ -123,14 +123,32 @@ class CustomBPETokenizer:
             # Convert byte sequence back to characters
             text.append(bytes([int(t) for t in token.split()]).decode('utf-8').replace('</w>', ''))
         return ' '.join(text).strip()
+def save(self, path):
+    # Convert tuple keys to strings for JSON serialization
+    serialized_ranks = {'|'.join(k): v for k, v in self.bpe_ranks.items()}
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump({
+            "token_to_id": self.token_to_id,
+            "bpe_ranks": serialized_ranks,
+            "config": {
+                "vocab_size": self.vocab_size,
+                "special_tokens": self.special_tokens
+            }
+        }, f, ensure_ascii=False, indent=2)
 
-    def save(self, path):
-        with open(path, 'w') as f:
-            json.dump({"token_to_id": self.token_to_id, "bpe_ranks": list(self.bpe_ranks)}, f)
-
-    def load(self, path):
-        with open(path, 'r') as f:
-            data = json.load(f)
-        self.token_to_id = data["token_to_id"]
-        self.bpe_ranks = {tuple(k): i for i, k in enumerate(data["bpe_ranks"])}
-        self.id_to_token = {v: k for k, v in self.token_to_id.items()}
+def load(self, path):
+    with open(path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    
+    # Load base configuration
+    self.token_to_id = data['token_to_id']
+    self.id_to_token = {v: k for k, v in self.token_to_id.items()}
+    
+    # Convert string keys back to tuples
+    self.bpe_ranks = {tuple(k.split('|')): v 
+                     for k, v in data['bpe_ranks'].items()}
+    
+    # Load original config
+    config = data.get('config', {})
+    self.vocab_size = config.get('vocab_size', len(self.token_to_id))
+    self.special_tokens = config.get('special_tokens', ["<PAD>", "<UNK>", "<BOS>", "<EOS>"])
