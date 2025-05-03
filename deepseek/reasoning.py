@@ -7,7 +7,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Literal
 
-from deepmodel import GPTModel  # Import your existing model
+from deepseek.deepmodel import GPTModel  # Import your existing model
 
 logger = logging.getLogger(__name__)
 

@@ -11,7 +11,7 @@ class SelfModel:
         else:
             # seed with basic identity
             self.data = {
-                "name": "DeepAgent",
+                "name": "Maran",
                 "created_at": str(datetime.now()),
                 "capabilities": ["code_generation", "planning", "self_improvement"],
                 "goals": [],
