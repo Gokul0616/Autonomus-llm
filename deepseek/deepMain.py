@@ -13,7 +13,7 @@ from autonomous.safety.security import SecurityError
 from autonomous.agent.agent import AutonomousAgent
 from autonomous.tools.software import ShellTool, DesktopAutomationTool, RestAPITool
 from autonomous.tools.hardware import LEDTool, ServoTool, SensorTool
-from self_improvement import CodeValidator  # your sandboxed executor
+from self_improvement import CodeValidator  
 from reasoning import TreeOfThoughtReasoner
 import BPETokenizer
 

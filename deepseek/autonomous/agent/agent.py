@@ -1,10 +1,13 @@
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Optional
 from deepmodel import GPTModel
 from reasoning import PlanStep, BaseReasoner
 from autonomous.Memory.memory_store import GPTMemoryStore
 from tools.software import ShellTool, DesktopAutomationTool, RestAPITool
 from tools.hardware import LEDTool, ServoTool, SensorTool
-import BPETokenizer
+from dataclasses import dataclass, field
+import logging
+
+logger = logging.getLogger(__name__)
 
 class AutonomousAgent:
     def __init__(
@@ -27,7 +30,7 @@ class AutonomousAgent:
 
     def run(self, goal: str, max_iters: int = 5):
         # 1. seed context from memory
-        context = self.memory.query(goal)
+        context: List[str] = self.memory.query(goal)
 
         for iteration in range(max_iters):
             # 2. PLAN
@@ -35,14 +38,19 @@ class AutonomousAgent:
 
             # 3. EXECUTE each step in a flattened plan
             for step in self._flatten(plan):
-                if step.type == "code":
-                    result = self.tools["code_exec"].run(step.text)
-                elif step.type == "tool" and step.tool_name:
-                    result = self.tools[step.tool_name].run(**(step.args or {}))
-                else:
-                    result = {"info": step.text}
+                try:
+                    if step.type == "code":
+                        result = self.tools["code_exec"].run(step.text)
+                    elif step.type == "tool" and step.tool_name:
+                        result = self.tools[step.tool_name].run(**(step.args or {}))
+                    else:
+                        result = {"info": step.text}
+                except Exception as e:
+                    tool_name = step.tool_name if step.tool_name else "code"
+                    logger.error(f"Tool {tool_name} failed: {e}")
+                    result = {"error": str(e)}
 
-                # 4. LEARN: write every result back into memory
+                # 4. LEARN: write every result back into memory and context
                 record = f"Step: {step.type} → {step.text} | Result: {result}"
                 self.memory.write(record)
                 context.append(record)
@@ -52,7 +60,7 @@ class AutonomousAgent:
                     return
 
         print("⚠️ Max iterations reached.")
-    
+
     def _flatten(self, root: PlanStep) -> List[PlanStep]:
         """Preorder traversal to turn a tree of PlanSteps into a list."""
         out = [root]

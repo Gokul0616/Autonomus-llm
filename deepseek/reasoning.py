@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 from enum import Enum
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal
 
 from deepmodel import GPTModel  # Import your existing model
@@ -39,11 +39,13 @@ class ActionType(Enum):
 #     is_final: bool = False
 @dataclass
 class PlanStep:
-    type: Literal["think", "tool", "code"]
+    type: Literal["think","tool","code"]
     text: str
     tool_name: Optional[str] = None
-    args: Optional[Dict[str, Any]] = None
+    args: Optional[Dict[str,Any]] = None
     is_final: bool = False
+    children: List["PlanStep"] = field(default_factory=list)
+
 
 
 class BaseReasoner(ABC):
