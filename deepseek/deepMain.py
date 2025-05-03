@@ -10,6 +10,16 @@ from autonomous.actions.executor import ActionExecutor,SafeExecutor
 from autonomous.safety.approval import HumanApproval, ConstitutionalAI
 from autonomous.safety.security import SecurityError
 
+from autonomous.agent.agent import AutonomousAgent
+from autonomous.tools.software import ShellTool, DesktopAutomationTool, RestAPITool
+from autonomous.tools.hardware import LEDTool, ServoTool, SensorTool
+from self_improvement import CodeValidator  # your sandboxed executor
+from reasoning import TreeOfThoughtReasoner
+import BPETokenizer
+
+
+from autonomous.Memory.memory_store import GPTMemoryStore
+
 def initialize_agent(improved_model_path=None):
     tokenizer = load_tokenizer()
     model = GPTModel(tokenizer=tokenizer)
@@ -102,8 +112,38 @@ if __name__ == "__main__":
     GPTModel.monitor.start_server(port=9090)
     print("=== Initial Run with Base Model ===")
     main_loop(use_improved=False) 
-    
-    # Start autonomous loop
+
+    memory_store = GPTMemoryStore(
+        model=GPTModel(),
+        tokenizer=BPETokenizer()
+    )
+
+
+    # 1️⃣ Build your toolset
+    agent_tools = {
+        # software utilities
+        "shell": ShellTool(),
+        "desktop": DesktopAutomationTool(),
+        "http": RestAPITool(),
+        # code executor (for PlanStep type="code")
+        "code_exec": CodeValidator(),    
+        # hardware (example GPIO pins)
+        "led": LEDTool(pin=17),
+        "servo": ServoTool(pin=18),
+        "sensor": SensorTool(pin=27),
+    }
+
+    # 2️⃣ Instantiate the agent
+    agent = AutonomousAgent(
+        llm=GPTModel(),
+        memory=memory_store,
+        tools=agent_tools,
+        reasoner=TreeOfThoughtReasoner(llm=GPTModel())
+    )
+
+    # 3️⃣ Run it on your desired goal
+    agent.run("make yourself upgrade with interact with real life application")
+        # Start autonomous loop
     autonomous_loop()
     
     # Subsequent runs can use improved model

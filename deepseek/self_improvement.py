@@ -12,6 +12,7 @@ import numpy as np
 import re
 import torch
 from reward_model import RewardModel
+import deepmodel
 
 logger = logging.getLogger(__name__)
 
@@ -155,6 +156,7 @@ class SelfImprovementEngine:
         # RL parameters
         self.gamma = 0.99
         self.entropy_coef = 0.01
+        self.llm= deepmodel
         self.optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
     # Add to SelfImprovementEngine class
     def learn_from_experience(self, experience):
@@ -175,6 +177,20 @@ class SelfImprovementEngine:
             "targets": experience["action"],
             "rewards": experience["reward"]
         }
+    def add_new_tool(self, tool_name: str, spec: str):
+        # 1) prompt LLM to generate Python code for the new Tool subclass
+        code = self.llm.generate_text(f"Write a HardwareTool subclass called {tool_name} that {spec}")
+        # 2) validate syntax and safety
+        result = self.validator.run(code)
+        if result["success"]:
+            # 3) exec the code in a safe namespace
+            namespace = {}
+            exec(code, namespace)
+            new_tool_cls = namespace[tool_name]
+            # 4) instantiate and register
+            self.agent.tools[tool_name] = new_tool_cls(**self._infer_constructor_args(new_tool_cls))
+            return True
+        return False
     def generate_improvement(self, task_description: str):
         """Full self-improvement loop"""
         # Generate code and tests

@@ -5,6 +5,8 @@ from typing import List, Dict, Any, Optional
 from enum import Enum
 import json
 from dataclasses import dataclass
+from typing import Literal
+
 from deepmodel import GPTModel  # Import your existing model
 
 logger = logging.getLogger(__name__)
@@ -21,13 +23,28 @@ class ActionType(Enum):
     RESEARCH = "web_search"
     MEMORY_UPDATE = "memory_update"
 
+# @dataclass
+# class PlanStep:
+#     thought: str
+#     type: ThoughtType
+#     state: Dict[str, Any]
+#     parent: Optional['PlanStep'] = None
+#     children: List['PlanStep'] = None
+# @dataclass
+# class PlanStep:
+#     type: Literal["think","tool","code"]
+#     text: str
+#     tool_name: Optional[str] = None
+#     args: Optional[Dict[str,Any]] = None
+#     is_final: bool = False
 @dataclass
 class PlanStep:
-    thought: str
-    type: ThoughtType
-    state: Dict[str, Any]
-    parent: Optional['PlanStep'] = None
-    children: List['PlanStep'] = None
+    type: Literal["think", "tool", "code"]
+    text: str
+    tool_name: Optional[str] = None
+    args: Optional[Dict[str, Any]] = None
+    is_final: bool = False
+
 
 class BaseReasoner(ABC):
     def __init__(self, llm: GPTModel, max_depth: int = 5):
@@ -186,10 +203,14 @@ class ReasoningAgent:
     def _validate_code_actions(self, plan: PlanStep):
         current = plan
         while current:
-            if current.type == ThoughtType.ACTION:
-                if self._is_code_action(current):
-                    if not self._safe_validate_code(current.state.get('code')):
-                        raise InvalidActionError("Code validation failed")
+            # if current.type == ThoughtType.ACTION:
+            #     if self._is_code_action(current):
+            #         if not self._safe_validate_code(current.state.get('code')):
+            #             raise InvalidActionError("Code validation failed")
+            if current.type == "code":
+                code_to_run = current.text
+                if not self._safe_validate_code(code_to_run):
+                    raise InvalidActionError("Code validation failed")
             current = current.parent
 
     def _safe_validate_code(self, code: str) -> bool:
