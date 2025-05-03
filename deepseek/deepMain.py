@@ -6,7 +6,7 @@ import json
 from deepseek.utils.tokenizerUtils import load_tokenizer
 from deepmodel import GPTModel
 from autonomous.perception.app_observer import ApplicationObserver
-from autonomous.actions.executor import ActionExecutor
+from autonomous.actions.executor import ActionExecutor,SafeExecutor
 from autonomous.safety.approval import HumanApproval, ConstitutionalAI
 from autonomous.safety.security import SecurityError
 
@@ -67,6 +67,7 @@ def autonomous_loop(use_improved=False):
         executor = ActionExecutor()
         safety = ConstitutionalAI()
         approval = HumanApproval()
+        executor = SafeExecutor() 
         
         while True:
             # Perception Phase

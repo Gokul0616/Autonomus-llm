@@ -2,6 +2,7 @@ from pywinauto import Application
 
 from autonomous.safety.security import CodeSandbox  # Add import
 from autonomous.safety.approval import ConstitutionalAI  # Add import
+from autonomous.safety.security import SecurityError
 class ActionExecutor:
     ACTION_TYPES = ["click", "type", "navigate", "api_call"]
     
