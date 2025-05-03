@@ -156,7 +156,25 @@ class SelfImprovementEngine:
         self.gamma = 0.99
         self.entropy_coef = 0.01
         self.optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
-
+    # Add to SelfImprovementEngine class
+    def learn_from_experience(self, experience):
+        """Continuous learning from real-world interactions"""
+        # Convert experience to training data
+        dataset = self._create_dataset(experience)
+        
+        # Fine-tune model
+        self.train_model(dataset)
+        
+        # Validate improvements
+        if self.validate_improvements():
+            self.versioner.save(self.model)
+            
+    def _create_dataset(self, experience):
+        return {
+            "inputs": experience["state"],
+            "targets": experience["action"],
+            "rewards": experience["reward"]
+        }
     def generate_improvement(self, task_description: str):
         """Full self-improvement loop"""
         # Generate code and tests

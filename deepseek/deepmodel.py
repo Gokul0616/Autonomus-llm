@@ -133,7 +133,22 @@ class GPTModel(nn.Module):
 
         x = self.ln_f(x)
         return self.head(x)
-    
+    # Add to GPTModel class
+    def continuous_train(self, experience_buffer):
+        """Online learning from experience"""
+        optimizer = torch.optim.AdamW(self.parameters(), lr=1e-6)
+        
+        for experience in experience_buffer:
+            inputs = self.tokenizer.encode(experience["state"])
+            targets = self.tokenizer.encode(experience["action"])
+            
+            outputs = self(inputs)
+            loss = F.cross_entropy(outputs, targets)
+            
+            optimizer.zero_grad()
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.parameters(), 1.0)
+            optimizer.step()
     def generate(self, prompt: str, **kwargs) -> str:
         inputs = self.tokenizer.encode(prompt)
         inputs = inputs[-self.max_len:]  # Truncate to max length
