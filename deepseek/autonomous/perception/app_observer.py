@@ -1,50 +1,60 @@
-import cv2
-import pygetwindow as gw
-import numpy as np
+# autonomous/perception/app_observer.py
+import platform
+import subprocess
+from PIL import ImageGrab
 
 class ApplicationObserver:
     def __init__(self):
-        self.window_handles = {}
-        
+        self.os = platform.system()
+
     def capture_state(self):
+        """Capture screenshots and active-window info across platforms."""
+        screenshot = ImageGrab.grab()
+
+        if self.os == "Windows":
+            import pygetwindow as gw
+            try:
+                win = gw.getActiveWindow()
+                active = {"title": win.title, "bbox": win.box}
+            except Exception:
+                active = {"title": None, "bbox": None}
+        elif self.os == "Darwin":
+            # macOS: use pygetwindow (supports macOS)
+            import pygetwindow as gw
+            win = gw.getActiveWindow()
+            active = {"title": win.title, "bbox": win.box}
+        else:
+            # Linux fallback via xdotool
+            try:
+                win_id = subprocess.check_output(
+                    ["xdotool", "getactivewindow"]
+                ).decode().strip()
+                title = subprocess.check_output(
+                    ["xdotool", "getwindowname", win_id]
+                ).decode().strip()
+                active = {"id": win_id, "title": title}
+            except Exception:
+                active = {"id": None, "title": None}
+
         return {
-            "screenshots": self.get_screenshots(),
-            "active_window": self.get_active_window(),
-            "ui_elements": self.detect_ui_components()
+            "screenshot": screenshot,
+            "active_window": active
         }
-    
-    def get_screenshots(self):
-        return {title: gw.getWindowsWithTitle(title)[0].screenshot() 
-                for title in gw.getAllTitles() if gw.getWindowsWithTitle(title)}
-    
-    def get_active_window_screenshot(self):
-        # Get active window and take its screenshot
-        active_window = gw.getActiveWindow()
-        if active_window:
-            screenshot = active_window.screenshot()
-            return cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
-        return None
-    
+
     def detect_ui_components(self):
-        image = self.get_active_window_screenshot()
-        if image is None:
-            return []
-        
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
-        # Edge detection (adjust thresholds as needed)
+        """Basic edge‑based UI component detection on the screenshot."""
+        import numpy as np
+        import cv2
+
+        img = np.array(self.capture_state()["screenshot"])
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         edges = cv2.Canny(gray, 50, 150)
-        
-        # Find contours (UI component boundaries)
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
-        # Extract bounding boxes as "components"
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL,
+                                       cv2.CHAIN_APPROX_SIMPLE)
+
         components = []
         for cnt in contours:
             x, y, w, h = cv2.boundingRect(cnt)
-            components.append({
-                "type": "ui_element",
-                "bbox": (x, y, w, h)
-            })
-            
-        return components  # Now properly defined
+            components.append({"type": "ui_element", "bbox": (x, y, w, h)})
+
+        return components

@@ -1,13 +1,13 @@
-
 # deepMain.py
+import itertools
 import os
 import json
 import torch
 from datetime import datetime
 
 # --- Transformer, Tokenizer & Training ---
-from deepseek.deepmodel import GPTModel, train_model, evaluate_model
-from BPETokenizer import CustomBPETokenizer
+from deepmodel import GPTModel, TextDataset, train_model, evaluate_model
+from tokenizers.BPETokenizer import CustomBPETokenizer
 
 # --- Monitoring & Versioning ---
 from model_versioning import ModelVersioner
@@ -19,7 +19,7 @@ from autonomous.self_model.self_model import SelfModel
 from autonomous.self_model.narrative import NarrativeGenerator
 
 # --- Reasoning & Self-Improvement ---
-from deepseek.reasoning import ReasoningAgent, InvalidActionError, TreeOfThoughtReasoner
+from reasoning import ReasoningAgent, InvalidActionError, TreeOfThoughtReasoner
 from self_improvement import CodeValidator, SelfImprovementEngine
 from reward_model import RewardModel
 
@@ -30,27 +30,48 @@ from autonomous.tools.hardware import LEDTool, ServoTool, SensorTool
 from autonomous.perception.app_observer import ApplicationObserver
 from autonomous.actions.executor import ActionExecutor, SafeExecutor
 from autonomous.safety.approval import HumanApproval, ConstitutionalAI
-
+from datasets import  load_dataset
 # --- Helper: Ensure training and tokenizer ---
-def ensure_training_and_tokenizer(model_path="transformer_model.pth", tok_path="tokenizer.json"):
-    # Train model if checkpoint missing
-    if not os.path.exists(model_path):
-        print(f"[Setup] Training Base Model → {model_path}")
-        # Example: load data and call train_model
-        # dataset, tokenizer = prepare_dataset_and_tokenizer()
-        tokenizer = CustomBPETokenizer(vocab_size=10000)
-        # tokenizer.build_vocab(texts)
-        model = GPTModel(tokenizer=tokenizer)
-        train_model(model, dataset=None, tokenizer=tokenizer)
-        torch.save(model.state_dict(), model_path)
-    else:
-        print(f"[Setup] Found model checkpoint: {model_path}")
-    # Ensure tokenizer exists
+from utils.tokenizerUtils import load_tokenizer as load_tokenizer_util
+
+def ensure_training_and_tokenizer(
+    model_path="transformer_model.pth",
+    tok_path="tokenizer.json",
+    vocab_size=10000,
+    num_stream=200_000,
+    block_size=128
+):
+    # 1) Prepare data streams
+    print("[Setup] Streaming training data…")
+    wiki_stream = load_dataset("wikipedia", "20220301.en", split="train", streaming=True, trust_remote_code=True)
+    code_stream = load_dataset("code_search_net", "python", split="train", streaming=True, trust_remote_code=True)
+
+    wiki_texts = list(itertools.islice((item["text"] for item in wiki_stream), num_stream))
+    code_texts = list(itertools.islice((item["whole_func_string"] for item in code_stream), num_stream))
+    texts = wiki_texts + code_texts
+
+    # 2) Build or load tokenizer
+    tokenizer = CustomBPETokenizer(vocab_size=vocab_size)
     if not os.path.exists(tok_path):
-        print(f"[Setup] Saving tokenizer → {tok_path}")
-        # tokenizer.save(tok_path)  # implement save in BPETokenizer
-        with open(tok_path, 'w') as f:
-            json.dump(CustomBPETokenizer().token_to_id, f)
+        print(f"[Setup] Building vocab ({vocab_size} tokens)…")
+        tokenizer.build_vocab(texts)
+        tokenizer.save(tok_path)
+    else:
+        print(f"[Setup] Loading existing tokenizer from {tok_path}…")
+        tokenizer.load(tok_path)
+
+    # 3) Instantiate dataset
+    dataset = TextDataset(texts, tokenizer, block_size=block_size)
+
+    # 4) Train model if needed
+    if not os.path.exists(model_path):
+        print(f"[Setup] Training model (this may take a while)…")
+        model = GPTModel(tokenizer=tokenizer)
+        train_model(model, dataset, tokenizer)
+        torch.save(model.state_dict(), model_path)
+        print(f"[Setup] Saved trained model to {model_path}")
+    else:
+        print(f"[Setup] Found existing model checkpoint at {model_path}")
 
 # --- Initialize components once ---
 def initialize_components(use_improved=False):
@@ -185,15 +206,23 @@ def unified_loop(comps):
             "reward": c["reward_model"].compute_reward(improvement.get("validation", {}), improvement.get("execution_time", 0))
         }])
 
-if __name__ == "__main__":
-    # Setup training & tokenizer
-    ensure_training_and_tokenizer()
 
-    # Initialize all components
+
+if __name__ == "__main__":
+    # ─── Step 0: Ensure we have a trained model + tokenizer ───
+    ensure_training_and_tokenizer(
+        model_path="transformer_model.pth",
+        tok_path="tokenizer.json",
+        vocab_size=10000,
+        num_stream=200_000,
+        block_size=128
+    )
+
+    # ─── Step 1: Initialize all the agent components ───
     comps = initialize_components(use_improved=False)
 
-    # Start monitoring server
+    # ─── Step 2: Start monitoring ───
     comps["monitor"].start_server(port=9090)
 
-    # Run unified loop
+    # ─── Step 3: Enter your unified autonomous loop ───
     unified_loop(comps)

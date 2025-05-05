@@ -2,8 +2,8 @@ from typing import List, Any, Dict, Optional
 from deepmodel import GPTModel
 from reasoning import PlanStep, BaseReasoner
 from autonomous.Memory.memory_store import GPTMemoryStore
-from tools.software import ShellTool, DesktopAutomationTool, RestAPITool
-from tools.hardware import LEDTool, ServoTool, SensorTool
+from autonomous.tools.software import ShellTool, DesktopAutomationTool, RestAPITool
+from autonomous.tools.hardware import LEDTool, ServoTool, SensorTool
 from dataclasses import dataclass, field
 import logging
 

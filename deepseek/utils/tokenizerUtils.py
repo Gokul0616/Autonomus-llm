@@ -1,7 +1,7 @@
 # tokenizer_utils.py
 import json
 from typing import Optional
-from BPETokenizer import CustomBPETokenizer  # Replace with actual import path
+from tokenizers.BPETokenizer import CustomBPETokenizer  # Replace with actual import path
 
 def load_tokenizer(
     path: str = "tokenizer.json",

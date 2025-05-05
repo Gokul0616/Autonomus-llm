@@ -10,7 +10,7 @@ from torch.cuda.amp import autocast, GradScaler
 import torch.nn.functional as F  # Add this with other imports
 from datasets import load_dataset
 import itertools
-from BPETokenizer import CustomBPETokenizer
+from tokenizers.BPETokenizer import CustomBPETokenizer
 from einops import rearrange
 from rotary_embedding_torch import RotaryEmbedding  
 from model_versioning import ModelVersioner
