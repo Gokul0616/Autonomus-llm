@@ -1,0 +1,32 @@
+common:
+  device: cuda
+  dtype: float16
+  max_batch_size: 16
+  safety:
+    max_length: 2048
+    temperature_range: [0.1, 1.0]
+
+router:
+  model_name: "microsoft/deberta-v3-base"
+  device: cuda
+  threshold: 0.7
+
+model_paths:
+  moe: "models/moe_v1.pt"
+  retnet: "models/retnet_v2.pt"
+  rwkv: "models/rwkv_v3.pt"
+
+moe:
+  d_model: 1024
+  num_experts: 8
+  d_ffn: 4096
+  dropout: 0.1
+
+retnet:
+  layers: 12
+  heads: 8
+  d_model: 768
+
+rwkv:
+  dim: 512
+  depth: 24
