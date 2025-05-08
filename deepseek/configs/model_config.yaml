@@ -30,3 +30,19 @@ retnet:
 rwkv:
   dim: 512
   depth: 24
+
+
+# configs/model_config.yaml
+system:
+  default_model: "moe"
+  fallback_model: "rwkv"
+  use_fusion: true
+
+task_model_mapping:
+  "0": "moe"    # Code generation
+  "1": "retnet" # Long context reasoning
+  "2": "rwkv"   # Real-time interaction
+
+autonomous:
+  max_parallel: 3
+  safety_threshold: 0.85
