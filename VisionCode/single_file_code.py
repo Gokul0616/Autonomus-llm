@@ -28,39 +28,47 @@ class ResidualBlock(nn.Module):
 class AdvancedUNet(nn.Module):
     def __init__(self, in_channels=3, base_channels=64):
         super().__init__()
-        self.down1 = nn.Sequential(
+        # Encoder
+        self.enc1 = nn.Sequential(
             nn.Conv2d(in_channels, base_channels, 3, padding=1),
-            nn.SiLU(),
-            ResidualBlock(base_channels)
+            nn.SiLU(), ResidualBlock(base_channels)
         )
-        self.down2 = nn.Sequential(
+        self.enc2 = nn.Sequential(
             nn.Conv2d(base_channels, base_channels*2, 3, padding=1),
-            nn.SiLU(),
-            ResidualBlock(base_channels*2)
+            nn.SiLU(), ResidualBlock(base_channels*2)
         )
+        # Bottleneck
         self.bottleneck = nn.Sequential(
-            nn.Conv2d(base_channels*2, base_channels*2, 3, padding=1),
-            nn.SiLU(),
-            ResidualBlock(base_channels*2)
+            nn.Conv2d(base_channels*2, base_channels*4, 3, padding=1),
+            nn.SiLU(), ResidualBlock(base_channels*4)
+        )
+        # Decoder: mirror encoder
+        self.up2 = nn.Sequential(
+            nn.ConvTranspose2d(base_channels*4, base_channels*2, 2, stride=2),
+            nn.SiLU(), ResidualBlock(base_channels*2)
         )
         self.up1 = nn.Sequential(
             nn.ConvTranspose2d(base_channels*2, base_channels, 2, stride=2),
-            nn.SiLU(),
-            ResidualBlock(base_channels)
+            nn.SiLU(), ResidualBlock(base_channels)
         )
-        self.up2 = nn.Conv2d(base_channels, in_channels, 1)
+        self.final = nn.Conv2d(base_channels, in_channels, 1)
 
     def forward(self, x, t_embed):
-        e1 = self.down1(x)
-        p1 = nn.functional.avg_pool2d(e1, 2)
-        e2 = self.down2(p1)
-        p2 = nn.functional.avg_pool2d(e2, 2)
-        b = self.bottleneck(p2)
+        # encode
+        e1 = self.enc1(x)              # B,64,64,64
+        p1 = nn.functional.avg_pool2d(e1,2)  # 32
+        e2 = self.enc2(p1)             # B,128,32,32
+        p2 = nn.functional.avg_pool2d(e2,2)  # 16
+        b  = self.bottleneck(p2)       # B,256,16,16
+        # add time embed broadcast
         b = b + t_embed.view(-1,1,1,1)
-        d1 = self.up1(b) + e2
-        out = self.up2(d1)
+        # decode
+        d2 = self.up2(b)               # B,128,32,32
+        d2 = d2 + e2                   # skip
+        d1 = self.up1(d2)              # B,64,64,64
+        d1 = d1 + e1                   # skip
+        out = self.final(d1)           # B,3,64,64
         return out
-
 # -----------------------------
 # 2. Fast diffusion scheduler
 # -----------------------------
@@ -74,10 +82,10 @@ class FastScheduler:
         self.sqrt_one_minus_alpha_cumprod = torch.sqrt(1 - self.alpha_cumprod)
 
     def q_sample(self, x_start, t, noise):
-        return (
-            self.sqrt_alpha_cumprod[t].view(-1,1,1,1) * x_start +
-            self.sqrt_one_minus_alpha_cumprod[t].view(-1,1,1,1) * noise
-        )
+        # cast the cpu buffers to whatever device t is on
+        sqrt_a = self.sqrt_alpha_cumprod.to(t.device)[t].view(-1,1,1,1)
+        sqrt_oma = self.sqrt_one_minus_alpha_cumprod.to(t.device)[t].view(-1,1,1,1)
+        return sqrt_a * x_start + sqrt_oma * noise
 
 # ----------------------------------
 # 3. Efficient classification model
